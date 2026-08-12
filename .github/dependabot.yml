@@ -1,0 +1,19 @@
+version: 2
+
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # The AWS SDK releases its modules together. One pull request per week
+      # beats a dozen.
+      aws-sdk:
+        patterns:
+          - github.com/aws/aws-sdk-go-v2*
+          - github.com/aws/smithy-go
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

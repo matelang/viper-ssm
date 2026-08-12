@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Question or usage help
+    url: https://github.com/matelang/viper-ssm/discussions
+    about: Ask here rather than opening an issue.
+
+  - name: Security report
+    url: https://github.com/matelang/viper-ssm/security/advisories/new
+    about: Report privately. Never include a parameter value.
+
+  - name: Why the API looks like this
+    url: https://github.com/matelang/viper-ssm/blob/main/CONTRIBUTING.md
+    about: What Viper's extension point permits, and what is out of scope.

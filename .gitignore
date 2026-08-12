@@ -1,0 +1,19 @@
+# Build output
+/dist/
+*.exe
+*.test
+
+# Coverage
+*.out
+coverage.*
+
+# Editors
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local environment — never commit AWS credentials or parameter dumps
+.env
+.env.*
+*.local

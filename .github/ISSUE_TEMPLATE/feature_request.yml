@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest something this package should do.
+labels: [enhancement]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read [`CONTRIBUTING.md`](https://github.com/matelang/viper-ssm/blob/main/CONTRIBUTING.md)
+        first. It lists what is out of scope on purpose: writing parameters,
+        Secrets Manager, our own retry, our own credential handling. It also
+        records what Viper's extension point permits, which is why the API looks
+        the way it does.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do. Where this package stops you.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: |
+        Sketch it if it changes the public API. Remember that
+        `viper.RemoteProvider` carries four strings and no context, so
+        per-provider configuration has nowhere to live.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: Existing options, or a workaround in your own code.
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: I read the out-of-scope list, and this is not on it.
+          required: true
+        - label: This needs no new dependency, or I have said why one is worth it.
+          required: true

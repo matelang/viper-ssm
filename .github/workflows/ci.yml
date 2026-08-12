@@ -1,0 +1,121 @@
+name: CI
+
+# Actions are pinned by commit SHA with the tag in a comment. A moving tag is a
+# write anybody with push access to that action can make into this pipeline.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (go ${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported (matches the go directive) and current.
+        go: ["1.24.x", "1.26.x"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+
+      - run: go build ./...
+
+      - run: go vet ./...
+
+      - name: Test with race detector
+        run: go test -race -count=1 -coverprofile=coverage.out ./...
+
+  integration:
+    name: integration (Floci)
+    runs-on: ubuntu-latest
+
+    # The AWS emulator the integration tier reads and writes real parameters
+    # against. Port 4566 is published to the runner, so FLOCI_ENDPOINT is
+    # localhost from the job's point of view.
+    services:
+      floci:
+        image: floci/floci:latest
+        ports:
+          - 4566:4566
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+        options: >-
+          --health-cmd "curl -sf http://localhost:4566/ || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Vet the tagged build
+        run: go vet -tags=integration ./...
+
+      # FLOCI_REQUIRED turns an unreachable emulator into a failure rather than a
+      # skip. Without it a broken service container would leave this job green
+      # while testing nothing.
+      - name: Integration tests against Floci
+        env:
+          FLOCI_ENDPOINT: http://localhost:4566
+          FLOCI_REQUIRED: "1"
+        run: go test -tags=integration -race -count=1 ./...
+        timeout-minutes: 10
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: v2.11.4
+
+  tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Reports a diff instead of writing one, so the check needs no git plumbing.
+      - name: Verify go.mod and go.sum are tidy
+        run: go mod tidy -diff
+
+  vuln:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Current Go, not the module's floor. setup-go pins GOTOOLCHAIN=local, and
+      # govulncheck needs a newer toolchain than this module asks of its users.
+      # The scan still reads this module's own go directive.
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: true
+
+      - name: Check dependencies against the Go vulnerability database
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...

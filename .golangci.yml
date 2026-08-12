@@ -1,0 +1,28 @@
+version: "2"
+
+run:
+  # Without this the integration tier is invisible to every linter.
+  build-tags:
+    - integration
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - errorlint
+    - godot
+    - misspell
+    - revive
+    - copyloopvar
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

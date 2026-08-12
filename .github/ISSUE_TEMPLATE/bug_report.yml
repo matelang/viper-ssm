@@ -1,0 +1,85 @@
+name: Bug report
+description: Something does not work the way the documentation says.
+labels: [bug]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never paste a parameter value.** Not even a redacted one. Parameter
+        names, types and versions diagnose almost everything here.
+
+        Does the problem have a security impact? Report it privately instead:
+        https://github.com/matelang/viper-ssm/security/advisories/new
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you start
+      options:
+        - label: I called `SetConfigType("json")` on the Viper instance.
+          required: true
+        - label: I passed a non-empty endpoint to `AddRemoteProvider`.
+          required: true
+        - label: I am on the latest release.
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected. What you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: |
+        The smallest code that shows it. Plus the parameter layout: names, types
+        and versions only.
+      placeholder: |
+        Parameters:
+          /myapp/prod/database/url   String       version 3
+          /myapp/prod/database       SecureString version 1
+
+        Code:
+          if err := viperssm.Install(viperssm.WithRegion("eu-central-1")); err != nil { ... }
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: viper-ssm version
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: go-version
+    attributes:
+      label: Go version
+      description: The output of `go version`.
+      placeholder: go version go1.26.0 linux/amd64
+    validations:
+      required: true
+
+  - type: input
+    id: viper-version
+    attributes:
+      label: Viper version
+      placeholder: v1.21.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        The relevant log lines, or the error message. Check them for values
+        first. A value in there is itself a bug worth reporting.
+      render: text
